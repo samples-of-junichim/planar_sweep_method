@@ -746,7 +746,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             # 子要素が２以上ある場合は、2-3木が成立している
             if base.numberOfChild >= 2:
                 # 最大要素を更新
-                self._update_max_node(self.root)
+                self._update_max_node(base)
                 break
 
             # 以下の処理は base の子要素が１の場合に行う
@@ -794,14 +794,19 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         """葉の削除
 
         指定された葉を削除する。
-        この関数狩猟時点では、2-3木を満たす parent には
+        この関数終了時点では、2-3木を満たす parent には
         なっていない点に注意。
 
         また、 parent の子要素は、削除後左詰めになるように移動しておく
+
+        Args:
+            target_leaf: 削除対象の葉
+            parent: target_leaf の親
         """
         if target_leaf is parent.left:
             parent.left = parent.mid
             parent.mid = parent.right
+            parent.right = None
         elif target_leaf is parent.mid:
             parent.mid = parent.right
             parent.right = None
