@@ -294,6 +294,9 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         """検索
 
         引数で与えられたオブジェクトの値と同じ値を持つ Node を返す
+
+        Args:
+            target: 検索対象の要素
         """
         result: Node[T] = self._search_raw(target)
         if isinstance(result, Leaf):
@@ -487,6 +490,17 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         return None
 
     def insert(self, obj: T):
+        """要素の追加
+
+        引数で与えられた obj を内部に持つ葉を作成して、木に追加する
+        もし、引数の obj が既に存在していた場合は、なにもしない
+
+        当該要素を追加したのち、2-3木が保たれるように再構築を行う
+
+        Args:
+            obj: 追加対象の要素
+        """
+
         # 挿入場所を見つける
         result: Node[T] = self._search_raw(obj)
 
@@ -726,6 +740,17 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             nd.mid_max_node = self._maximum_raw(nd.mid)
 
     def delete(self, obj: T):
+        """要素の削除
+
+        引数で与えられた obj と同じ値を持つ葉を検索して削除する
+        もし、対象となる葉がなければ、なにもしない
+
+        当該要素を削除したのち、2-3木が保たれるように再構築を行う
+
+        Args:
+            obj: 削除対象の要素
+        """
+
         # 削除対象を見つける
         result: Node[T] = self._search_raw(obj)
 
