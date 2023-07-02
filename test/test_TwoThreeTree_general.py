@@ -203,3 +203,15 @@ class TestTwoThreeTree(unittest.TestCase):
 
         nd = TestTwoThreeTree.tht.search(NodeForTest("03", 3.0))
         self.assertIsNone(nd)
+
+    def test_remove_3(self):
+        # すべて削除
+        self.assertEqual(11, TestTwoThreeTree.tht.size)
+        self.assertEqual(7, TestTwoThreeTree.tht.leafSize)
+        self.assertEqual(3, TestTwoThreeTree.tht.height)
+
+        TestTwoThreeTree.tht.removeAll()
+
+        self.assertEqual(1, TestTwoThreeTree.tht.size)
+        self.assertEqual(0, TestTwoThreeTree.tht.leafSize)
+        self.assertEqual(1, TestTwoThreeTree.tht.height)
