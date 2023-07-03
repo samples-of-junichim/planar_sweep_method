@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from enum import Enum, auto, unique
 from typing import Callable, Generic, Self, TypeVar, Union
 
+from graphviz import Digraph
+
 @unique
 class NodeChildPos(Enum):
     LEFT  = auto()
@@ -947,4 +949,90 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             self.root.mid = None
         if self.root.left is not None:
             self.root.left = None
-            
+
+    def visualizeGraph(self, verbose: bool, graph_name:str = "two_three_graph.gv"):
+        """2-3木を図示する
+
+        詳細モードが指定された場合、以下も行う
+            ・内部節点の left max, mid max を表示
+            ・子要素から親要素への参照を表示
+
+        Args:
+            verbose: 詳細モード
+        """
+        g = Digraph(format="pdf")
+        g.attr("node", shape="circle")
+
+        # root
+        self._visualizeGraph_raw(g, self.root, verbose)
+        
+        # for debug
+        if verbose:
+            print(g.source)
+
+        g.render(graph_name)
+
+    def _visualizeGraph_raw(self, g: Digraph, nd: Node[T] | None, verbose: bool):
+        """再帰によりグラフを描画
+
+        詳細モードの場合、子要素から親要素への参照も表示する
+
+        Args:
+            g: Digraph
+            nd: 描画対象ノード
+            verbose: 詳細モード
+        """
+        if nd is None:
+            return
+        
+        # 対象 Node の描画
+        self._drawNode(g, nd, verbose)
+
+        # 子要素
+        if nd.left is not None:
+            self._drawNode(g, nd.left, verbose)
+            g.edge(str(id(nd)), str(id(nd.left)))
+            if verbose:
+                g.edge(str(id(nd.left)), str(id(nd.left.parent)))
+
+            self._visualizeGraph_raw(g, nd.left, verbose)
+
+        if nd.mid is not None:
+            self._drawNode(g, nd.mid, verbose)
+            g.edge(str(id(nd)), str(id(nd.mid)))
+            if verbose:
+                g.edge(str(id(nd.mid)), str(id(nd.mid.parent)))
+
+            self._visualizeGraph_raw(g, nd.mid, verbose)
+
+        if nd.right is not None:
+            self._drawNode(g, nd.right, verbose)
+            g.edge(str(id(nd)), str(id(nd.right)))
+            if verbose:
+                g.edge(str(id(nd.right)), str(id(nd.right.parent)))
+
+            self._visualizeGraph_raw(g, nd.right, verbose)
+
+    def _drawNode(self, g: Digraph, nd: Node[T], verbose: bool):
+        """Node の描画
+
+        詳細モードの場合、内部節点についての left max, mid max も出力する
+
+        Args:
+            g: Digraph
+            nd: 描画対象ノード
+            verbose: 詳細モード
+        """
+        if isinstance(nd, InternalNode):
+            g.node(str(id(nd)), "", xlabel=self._createlabel(nd) if verbose else "")
+        else:
+            g.node(str(id(nd)), self._createlabel(nd), shape="circle")
+
+    def _createlabel(self, nd: Node[T] | None) -> str:
+        if nd is None:
+            return ""
+        
+        if isinstance(nd, Leaf):
+            return f"{nd.val}"
+        else:
+            return f"left: {nd.left_max_val}\\nmid: {nd.mid_max_val}"
