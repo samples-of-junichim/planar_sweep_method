@@ -31,8 +31,9 @@ class Node(ABC, Generic[T]):
         raise NotImplementedError()
 
     @property
+    @abstractmethod
     def isLeaf(self) -> bool:
-        return not self.isInternal
+        raise NotImplementedError()
 
     @property
     def left(self) -> Self | None:
@@ -68,16 +69,6 @@ class Node(ABC, Generic[T]):
         if self.right is not None:
             count += 1
         return count
-
-    @property
-    @abstractmethod
-    def left_max_val(self) -> float:
-        raise NotImplementedError()
-
-    @property
-    @abstractmethod
-    def mid_max_val(self) -> float:
-        raise NotImplementedError()
     
     @property
     def cargo(self) -> T:
@@ -119,6 +110,10 @@ class InternalNode(Node[T]):
     @property
     def isInternal(self) -> bool:
         return True
+    
+    @property
+    def isLeaf(self) -> bool:
+        return not self.isInternal
     
     @property
     def left(self) -> Node[T] | None:
@@ -195,13 +190,9 @@ class Leaf(Node[T]):
         return False
     
     @property
-    def left_max_val(self) -> float | None:
-        return self.val
-
-    @property
-    def mid_max_val(self) -> float | None:
-        return self.val
-
+    def isLeaf(self) -> bool:
+        return not self.isInternal
+    
     @property
     def cargo(self) -> T:
         return self._cargo
@@ -1034,7 +1025,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         if nd is None:
             return ""
         
-        if isinstance(nd, Leaf):
-            return f"{nd.val}"
-        else:
+        if isinstance(nd, InternalNode):
             return f"left: {nd.left_max_val}\\nmid: {nd.mid_max_val}"
+        else:
+            return f"{nd.val}"
