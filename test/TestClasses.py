@@ -1,5 +1,6 @@
 
 from dataclasses import dataclass
+import math
 from TwoThreeTree import Leaf, Node
 
 # テスト用の Node 要素
@@ -15,7 +16,12 @@ class MyLeaf(Leaf[NodeForTest]):
 
 def get_key(v: NodeForTest) -> float:
     return v.key
-def comp_key(v1: NodeForTest, v2: NodeForTest) -> bool:
-    return v1.key == v2.key
+def comp_key(v1: NodeForTest, v2: NodeForTest) -> int:
+    if math.isclose(v1.key, v2.key):
+        return 0
+    if v1.key < v2.key:
+        return -1
+    else:
+        return 1    
 def myleaf_ctor(v: NodeForTest, parent: Node[NodeForTest]):
     return MyLeaf(v, parent)
