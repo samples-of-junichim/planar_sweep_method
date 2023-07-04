@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import datetime
 import unittest
 from TwoThreeTree import Leaf, Node, TwoThreeTree
 from test.TestClasses import MyLeaf, NodeForTest, comp_key, get_key, myleaf_ctor
@@ -98,6 +99,9 @@ class TestTwoThreeTree(unittest.TestCase):
         self.assertEqual(9, self.tht.leafSize)
         self.assertEqual(4, self.tht.height)
 
+        # root 要素の left_max, mid_max をチェック
+        self.tht.visualizeGraph(True, "sample_" + datetime.datetime.now().isoformat())
+
         self.tht.delete(NodeForTest("01", 5.0))
 
         self.assertEqual(15, self.tht.size)
@@ -105,6 +109,7 @@ class TestTwoThreeTree(unittest.TestCase):
         self.assertEqual(4, self.tht.height)
 
         # root 要素の left_max, mid_max をチェック
+        self.tht.visualizeGraph(True, "sample_" + datetime.datetime.now().isoformat())
 
     def test_remove_tree_06(self):
         """内部要素からの子要素の削除
