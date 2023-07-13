@@ -1026,6 +1026,12 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             return ""
         
         if isinstance(nd, InternalNode):
-            return f"left: {nd.left_max_val}\\nmid: {nd.mid_max_val}"
+            left_str: str = ""
+            mid_str: str  = ""
+            if nd.left_max_node is not None:
+                left_str = f"left: {nd.left_max_val}"
+            if nd.mid_max_node is not None:
+                mid_str = f"mid: {nd.mid_max_val}"
+            return left_str + "\\n" + mid_str
         else:
             return f"{nd.val}"
