@@ -943,17 +943,22 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         if self.root.left is not None:
             self.root.left = None
 
-    def visualizeGraph(self, verbose: bool, graph_name:str = "two_three_graph.gv"):
+    def visualizeGraph(self, verbose: bool, graph_name:str = "two_three_graph.gv", format_name: str = "pdf"):
         """2-3木を図示する
+
+        graphviz ファイルおよびフォーマットに従った図ファイルを出力する
 
         詳細モードが指定された場合、以下も行う
             ・内部節点の left max, mid max を表示
             ・子要素から親要素への参照を表示
+            ・graphviz の記述内容を標準出力へ出力
 
         Args:
             verbose: 詳細モード
+            graph_name: 出力ファイル名, デフォルトは two_three_graph.gv
+            format_name: 出力フォーマット, pdf, png など, デフォルトは pdf
         """
-        g = Digraph(format="pdf")
+        g = Digraph(format=format_name)
         g.attr("node", shape="circle")
 
         # root
