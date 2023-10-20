@@ -201,12 +201,44 @@ class Leaf(Node[T]):
     def val(self) -> float:
         return self._func_get_val(self._cargo)
 
-    def __eq__(self, other: T) -> bool:
+    def compareCargo(self, other: T) -> int:
+        """格納している要素の比較
+        
+        本 Leaf オブジェクトが保持するオブジェクトの値を比較する
+
+        Args:
+            other  格納要素と同じ型のオブジェクト
+
+        Returns:
+            0: 一致,  負の値: 本 Leaf オブジジェクト < other,  正の値: 本 Leaf オブジェクト > other
+        """
+        return self._func_comp(self._cargo, other)
+    
+    def isEqualCargo(self, other: T) -> bool:
+        """格納している要素が等しいか否か判定
+        
+        本 Leaf オブジェクトが保持するオブジェクトの値を比較する
+
+        Args:
+            other  格納要素と同じ型のオブジェクト
+
+        Returns:
+            True: 一致,  False: 不一致
+        """
+        return self.compareCargo(other) == 0
+    
+    def __eq__(self, other: Self) -> bool:
         """比較演算子
         
         本 Leaf オブジェクトが保持するオブジェクトの値を比較する
+            
+        Args:
+            other  格納要素と同じ型のオブジェクト
+
+        Returns:
+            True: 一致,  False: 不一致
         """
-        return self._func_comp(self._cargo, other) == 0
+        return self.isEqualCargo(other.cargo)
 
 
 NL = TypeVar("NL", bound=Leaf)
@@ -215,23 +247,16 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
 
     2-3木を表すクラス
     """
-    def __init__(self, \
-                 func_get_val: Callable[[T], float], \
-                 func_comp: Callable[[T, T], int], \
-                 func_leaf_ctor: Callable[[T, Node[T]], NL]):
+    def __init__(self, func_leaf_ctor: Callable[[T, Node[T]], NL]):
         """初期化
 
         根の Node を作成する
         作成時点では root は子要素を一つも持たない点に注意
 
         Args:
-            func_get_val:   値オブジェクト T より値を取得する関数
-            func_comp:      値オブジェクト T の比較関数, func_comp(a, b) で呼ぶと, a > b => 正の値, a == b => 0, a < b => 負の値
             func_leaf_ctor: 値オブジェクト T より 葉の要素を作成する関数
         """
         self.root: InternalNode[T] = InternalNode[T](None)
-        self._func_get_val = func_get_val
-        self._func_comp = func_comp
         self._func_leaf_ctor = func_leaf_ctor
 
     @property
@@ -316,8 +341,10 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
 
             # 葉に到達した時
             if nd.isLeaf:
-                if self._func_comp(target, nd.cargo) == 0:
-                    return nd
+                if not isinstance(nd, Leaf):
+                    raise RuntimeError("invalid structure. maybe logical error")
+                if nd.isEqualCargo(target):
+                     return nd
                 else:
                     return parent
 
@@ -330,16 +357,24 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
                 # 中間の節点があるのに、左側に葉がないのは、ありえない
                 raise RuntimeError("invalid structure. maybe logical error")
             
-            if self._func_comp(target, nd.left_max_node.cargo) <= 0:
+            if not isinstance(nd.left_max_node, Leaf):
+                # 左側の最大要素は常に葉
+                raise RuntimeError("invalid structure. maybe logical error")
+
+            if nd.left_max_node.compareCargo(target) >= 0:
                 nd = nd.left
             else:
                 if nd.mid_max_node is None:
                     # 中央がない場合
                     return parent
-                elif self._func_comp(nd.left_max_node.cargo, target) < 0 and self._func_comp(target, nd.mid_max_node.cargo) <= 0:
-                    nd = nd.mid
                 else:
-                    nd = nd.right
+                    if not isinstance(nd.mid_max_node, Leaf):
+                        # 中央の最大要素は常に葉
+                        raise RuntimeError("invalid structure. maybe logical error")
+                    if nd.left_max_node.compareCargo(target) < 0 and nd.mid_max_node.compareCargo(target) >= 0:
+                        nd = nd.mid
+                    else:
+                        nd = nd.right
         
         # 見つからなかった場合
         return parent
@@ -591,7 +626,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
 
             # (2) target が root で 2個目の葉を追加する場合
             elif target.mid is None and target.left_max_node is not None:
-                if self._func_comp(leaf.cargo, target.left_max_node.cargo) <= 0:
+                if leaf.compareCargo(target.left_max_node.cargo) <= 0:
                     target.mid = target.left
                     target.left = leaf
                 else:
@@ -606,7 +641,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         if target.left_max_node is None or target.mid_max_node is None:
             raise RuntimeError("internal error: each internal node must have left or mid max node.")
         
-        if self._func_comp(leaf.cargo, target.left_max_node.cargo) <= 0:
+        if leaf.compareCargo(target.left_max_node.cargo) <= 0:
             # 挿入位置: left の左
             if target.right is None:
                 # 子要素２個
@@ -615,7 +650,8 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
                 # 子要素３個
                 inter = self._insert_leaf_with_inter(target, leaf, target.left, target.mid, target.right)
 
-        elif self._func_comp(target.left_max_node.cargo, leaf.cargo) < 0 and self._func_comp(leaf.cargo, target.mid_max_node.cargo) <= 0:
+        elif leaf.compareCargo(target.left_max_node.cargo) > 0 and leaf.compareCargo(target.mid_max_node.cargo) <= 0:
+
             # 挿入位置: left と mid の間
             if target.right is None:
                 # 子要素２個
@@ -629,7 +665,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             #   子要素は常に２個
             self._insert_leaf_without_inter(target, target.left, target.mid, leaf)
 
-        elif self._func_comp(leaf.cargo, target.right.cargo) <= 0:
+        elif leaf.compareCargo(target.right.cargo) <= 0:
             # 挿入位置: mid と right の間
             #   子要素は常に３個
             inter = self._insert_leaf_with_inter(target, target.left, target.mid, leaf, target.right)

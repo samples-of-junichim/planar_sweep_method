@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import datetime
 import unittest
 from TwoThreeTree import Leaf, Node, TwoThreeTree
-from test.TestClasses import MyLeaf, NodeForTest, comp_key, get_key, myleaf_ctor
+from test.TestClasses import MyLeaf, NodeForTest, myleaf_ctor
 
 class TestTwoThreeTree(unittest.TestCase):
     """2-3 木に関する削除操作のテスト
@@ -12,7 +12,7 @@ class TestTwoThreeTree(unittest.TestCase):
         print("2-3 tree test setup")
 
         # 2-3木を作成してテスト
-        self.tht: TwoThreeTree = TwoThreeTree[MyLeaf, NodeForTest](get_key, comp_key, myleaf_ctor)
+        self.tht: TwoThreeTree = TwoThreeTree[MyLeaf, NodeForTest](myleaf_ctor)
 
         self.tht.insert(NodeForTest("01", 2.0))
         self.tht.insert(NodeForTest("02", 5.0))

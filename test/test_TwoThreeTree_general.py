@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import datetime
 import unittest
 from TwoThreeTree import Leaf, Node, TwoThreeTree
-from test.TestClasses import MyLeaf, NodeForTest, comp_key, get_key, myleaf_ctor
+from test.TestClasses import MyLeaf, NodeForTest, myleaf_ctor
 
 class TestTwoThreeTree(unittest.TestCase):
     """典型的な 2-3 木に関するテスト
@@ -13,7 +13,7 @@ class TestTwoThreeTree(unittest.TestCase):
         print("2-3 tree test setup")
 
         # 2-3木を作成してテスト
-        cls.tht: TwoThreeTree = TwoThreeTree[MyLeaf, NodeForTest](get_key, comp_key, myleaf_ctor)
+        cls.tht: TwoThreeTree = TwoThreeTree[MyLeaf, NodeForTest](myleaf_ctor)
 
     @classmethod
     def tearDownClass(cls):
