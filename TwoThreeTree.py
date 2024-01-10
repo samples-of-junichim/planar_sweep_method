@@ -515,7 +515,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             return p.left
         return None
 
-    def insert(self, obj: T):
+    def insert(self, obj: T) -> Leaf[T]:
         """要素の追加
 
         引数で与えられた obj を内部に持つ葉を作成して、木に追加する
@@ -525,6 +525,9 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
 
         Args:
             obj: 追加対象の要素
+
+        Returns:
+            2-3 木における追加した要素に該当する Leaf
         """
 
         # 挿入場所を見つける
@@ -533,8 +536,11 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         if not isinstance(result, InternalNode):
             # 既に挿入済み
             # TODO 同じ値の場合はどう扱う？
-            return
-
+            if isinstance(result, Leaf):
+                return result
+            else:
+                raise RuntimeError("Node is not Leaf.")
+        
         # 2-3木を再構成
         parent: InternalNode[T] = result
 
@@ -548,7 +554,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         if inter is None:
             # 最大要素のアップデート
             self._update_max_node(leaf.parent)
-            return
+            return leaf
 
         # 中間要素が増えた場合
         base: InternalNode[T] = parent                # 葉の追加先となる基準の内部節点
@@ -601,6 +607,9 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
                 # 木の上へ
                 base = target
                 target = target.parent
+            
+        # 追加要素を返す
+        return leaf
 
     def _insert_leaf(self, target: InternalNode[T], leaf: Leaf[T]) -> InternalNode[T] | None:
         """ 葉を2-3木に追加する
