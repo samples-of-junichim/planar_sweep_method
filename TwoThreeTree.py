@@ -433,7 +433,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             else:
                 return None
 
-    def successor(self, obj: Leaf[T]):
+    def successor(self, obj: Leaf[T]) -> Leaf[T] | None:
         """引数の要素の次の要素を取得
 
         Args:
@@ -474,7 +474,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             return p.right
         return None
     
-    def predecessor(self, obj: Leaf[T]):
+    def predecessor(self, obj: Leaf[T]) -> Leaf[T] | None:
         """引数の要素の前の要素を取得
 
         Args:
