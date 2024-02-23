@@ -774,10 +774,8 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             raise RuntimeError()
         
         # 更新
-        if nd.left is not None:
-            nd.left_max_node = self._maximum_raw(nd.left)
-        if nd.mid is not None:
-            nd.mid_max_node = self._maximum_raw(nd.mid)
+        nd.left_max_node = self._maximum_raw(nd.left)
+        nd.mid_max_node = self._maximum_raw(nd.mid)
 
     def delete(self, obj: T):
         """要素の削除
@@ -821,6 +819,16 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
                 if isinstance(base.left, InternalNode):
                     base.left.parent = None
                     self.root = base.left
+                    # 最大要素を更新
+                    self._update_max_node(self.root)
+                    break
+                elif isinstance(base.left, Leaf):
+                    # root 配下に葉のみがある場合で、葉が１つの場合
+                    # 最大要素を更新
+                    self._update_max_node(self.root)
+                    break
+                elif base.left is None and self.root.numberOfChild == 0:
+                    # root のみの場合
                     # 最大要素を更新
                     self._update_max_node(self.root)
                     break
