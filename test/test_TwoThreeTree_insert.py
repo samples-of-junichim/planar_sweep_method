@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import datetime
 import unittest
 from TwoThreeTree import Leaf, Node, TwoThreeTree
 from test.TestClasses import MyLeaf, NodeForTest, myleaf_ctor
@@ -19,11 +20,15 @@ class TestTwoThreeTree(unittest.TestCase):
     def test_create_tree_1(self):
         """root への１つ目の子要素の挿入
         """
+        self.tht.visualizeGraph(True, "sample_only_root_" + datetime.datetime.now().isoformat())
+
         self.tht.insert(NodeForTest("01", 2.0))
 
         self.assertEqual(2, self.tht.size)
         self.assertEqual(1, self.tht.leafSize)
         self.assertEqual(2, self.tht.height)
+
+        self.tht.visualizeGraph(True, "sample_only_1_" + datetime.datetime.now().isoformat())
 
     def test_create_tree_2(self):
         """root への２つ目の子要素の挿入
@@ -36,6 +41,8 @@ class TestTwoThreeTree(unittest.TestCase):
         self.assertEqual(3, self.tht.size)
         self.assertEqual(2, self.tht.leafSize)
         self.assertEqual(2, self.tht.height)
+
+        self.tht.visualizeGraph(True, "sample_only_2_" + datetime.datetime.now().isoformat())
 
     def test_create_tree_3(self):
         """root への２つ目の子要素の挿入
@@ -61,6 +68,8 @@ class TestTwoThreeTree(unittest.TestCase):
         self.assertEqual(4, self.tht.size)
         self.assertEqual(3, self.tht.leafSize)
         self.assertEqual(2, self.tht.height)
+
+        self.tht.visualizeGraph(True, "sample_only_3_" + datetime.datetime.now().isoformat())
 
     def test_create_tree_5(self):
         """root への３つ目の子要素の挿入

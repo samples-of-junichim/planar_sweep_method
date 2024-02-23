@@ -178,3 +178,97 @@ class TestTwoThreeTree(unittest.TestCase):
         self.assertEqual(17, self.tht.size)
         self.assertEqual(10, self.tht.leafSize)
         self.assertEqual(4, self.tht.height)
+
+    def test_remove_tree_10(self):
+        """子要素を削除
+
+        残りの葉 3要素
+        """
+        self.assertEqual(16, self.tht.size)
+        self.assertEqual(9, self.tht.leafSize)
+        self.assertEqual(4, self.tht.height)
+
+        self.tht.delete(NodeForTest("08", 10.0))
+        self.tht.delete(NodeForTest("04", 9.0))
+        self.tht.delete(NodeForTest("09", 8.0))
+        self.tht.delete(NodeForTest("03", 7.0))
+        self.tht.delete(NodeForTest("02", 5.0))
+        self.tht.delete(NodeForTest("05", 4.0))
+
+        self.assertEqual(4, self.tht.size)
+        self.assertEqual(3, self.tht.leafSize)
+        self.assertEqual(2, self.tht.height)
+
+        self.tht.visualizeGraph(True, "sample_left_3_" + datetime.datetime.now().isoformat())
+
+    def test_remove_tree_11(self):
+        """子要素を削除
+
+        残りの葉 2要素
+        """
+        self.assertEqual(16, self.tht.size)
+        self.assertEqual(9, self.tht.leafSize)
+        self.assertEqual(4, self.tht.height)
+
+        self.tht.delete(NodeForTest("08", 10.0))
+        self.tht.delete(NodeForTest("04", 9.0))
+        self.tht.delete(NodeForTest("09", 8.0))
+        self.tht.delete(NodeForTest("03", 7.0))
+        self.tht.delete(NodeForTest("02", 5.0))
+        self.tht.delete(NodeForTest("05", 4.0))
+        self.tht.delete(NodeForTest("07", 3.0))
+
+        self.assertEqual(3, self.tht.size)
+        self.assertEqual(2, self.tht.leafSize)
+        self.assertEqual(2, self.tht.height)
+
+        self.tht.visualizeGraph(True, "sample_left_2_" + datetime.datetime.now().isoformat())
+
+    def test_remove_tree_12(self):
+        """子要素を削除
+
+        残りの葉 1要素
+        """
+        self.assertEqual(16, self.tht.size)
+        self.assertEqual(9, self.tht.leafSize)
+        self.assertEqual(4, self.tht.height)
+
+        self.tht.delete(NodeForTest("08", 10.0))
+        self.tht.delete(NodeForTest("04", 9.0))
+        self.tht.delete(NodeForTest("09", 8.0))
+        self.tht.delete(NodeForTest("03", 7.0))
+        self.tht.delete(NodeForTest("02", 5.0))
+        self.tht.delete(NodeForTest("05", 4.0))
+        self.tht.delete(NodeForTest("07", 3.0))
+        self.tht.delete(NodeForTest("01", 2.0))
+
+        self.assertEqual(2, self.tht.size)
+        self.assertEqual(1, self.tht.leafSize)
+        self.assertEqual(2, self.tht.height)
+
+        self.tht.visualizeGraph(True, "sample_left_1_" + datetime.datetime.now().isoformat())
+
+    def test_remove_tree_13(self):
+        """子要素を削除
+
+        残りの葉 0要素（ルートのみ）
+        """
+        self.assertEqual(16, self.tht.size)
+        self.assertEqual(9, self.tht.leafSize)
+        self.assertEqual(4, self.tht.height)
+
+        self.tht.delete(NodeForTest("08", 10.0))
+        self.tht.delete(NodeForTest("04", 9.0))
+        self.tht.delete(NodeForTest("09", 8.0))
+        self.tht.delete(NodeForTest("03", 7.0))
+        self.tht.delete(NodeForTest("02", 5.0))
+        self.tht.delete(NodeForTest("05", 4.0))
+        self.tht.delete(NodeForTest("07", 3.0))
+        self.tht.delete(NodeForTest("01", 2.0))
+        self.tht.delete(NodeForTest("06", 1.0))
+
+        self.assertEqual(1, self.tht.size)
+        self.assertEqual(0, self.tht.leafSize)
+        self.assertEqual(1, self.tht.height)
+
+        self.tht.visualizeGraph(True, "sample_left_only_root_" + datetime.datetime.now().isoformat())
