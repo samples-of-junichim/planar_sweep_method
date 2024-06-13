@@ -374,7 +374,11 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
                     if nd.left_max_node.compareCargo(target) < 0 and nd.mid_max_node.compareCargo(target) >= 0:
                         nd = nd.mid
                     else:
-                        nd = nd.right
+                        # 中央の最大要素より大きいけど、 右の子がない場合へ対応
+                        if nd.right is None:
+                            nd = nd.mid
+                        else:
+                            nd = nd.right
         
         # 見つからなかった場合
         return parent
