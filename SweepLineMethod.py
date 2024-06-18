@@ -87,11 +87,7 @@ class LeafA(Leaf[ANode]):
             v1 の y 座標 < v2 の y 座標 => 負の値
         """
         # 走査線上の y 座標を比較
-        if (v1.ls.calcYIfExist(self._sweepline.x) < v2.ls.calcYIfExist(self._sweepline.x)):
-            return -1
-        elif (v1.ls.calcYIfExist(self._sweepline.x) > v2.ls.calcYIfExist(self._sweepline.x)):
-            return 1
-        else:
+        if (math.isclose(v1.ls.calcYIfExist(self._sweepline.x), v2.ls.calcYIfExist(self._sweepline.x))):
             # 走査線上の y 座標が同じ場合への対応
 
             # 線分が同じであれば、走査線上の同一点（同一線分）と考え、一致とする
@@ -101,14 +97,22 @@ class LeafA(Leaf[ANode]):
             
             # 異なる線分同士の場合は、交点である可能性が高い。なので、少しずらして線分の上下を判定する
             try:
-                if (v1.ls.calcYIfExist(self._sweepline.x + self._delta_x) < v2.ls.calcYIfExist(self._sweepline.x + self._delta_x)):
+                if (math.isclose(v1.ls.calcYIfExist(self._sweepline.x + self._delta_x), v2.ls.calcYIfExist(self._sweepline.x + self._delta_x))):
+                    return 0
+                elif (v1.ls.calcYIfExist(self._sweepline.x + self._delta_x) < v2.ls.calcYIfExist(self._sweepline.x + self._delta_x)):
                     return -1
                 elif (v1.ls.calcYIfExist(self._sweepline.x + self._delta_x) > v2.ls.calcYIfExist(self._sweepline.x + self._delta_x)):
                     return 1
                 else:
+                    # ここにはこないはず
                     return 0
             except RuntimeError as e:
                 raise RuntimeError(f"exception occured, comparing 2 lines: {v1.ls.status = }, {v2.ls.status = }") from e
+            
+        elif (v1.ls.calcYIfExist(self._sweepline.x) < v2.ls.calcYIfExist(self._sweepline.x)):
+            return -1
+        elif (v1.ls.calcYIfExist(self._sweepline.x) > v2.ls.calcYIfExist(self._sweepline.x)):
+            return 1
 
 class SweepLineMethod:
     """平面走査法
