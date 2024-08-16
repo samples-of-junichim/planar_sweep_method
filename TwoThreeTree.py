@@ -75,7 +75,7 @@ class Node(ABC, Generic[T]):
         raise NotImplementedError()
     
     @property
-    def val(self) -> float:
+    def val(self) -> str:
         raise NotImplementedError()
     
 
@@ -151,14 +151,14 @@ class InternalNode(Node[T]):
         self._right = node
 
     @property
-    def left_max_val(self) -> float:
+    def left_max_val(self) -> str:
         if self.left_max_node is None:
             # root 要素のみの場合が該当する。それ以外は起こらないはず
             raise RuntimeError("invalid method call. left max node is None.")
         return self.left_max_node.val
 
     @property
-    def mid_max_val(self) -> float:
+    def mid_max_val(self) -> str:
         if self.mid_max_node is None:
             # 葉が１つの場合には、起こりえる状況だが、呼び出し元側でチェックすることを期待
             raise RuntimeError("invalid method call. mid max node is None.")
@@ -170,7 +170,7 @@ class Leaf(Node[T]):
     Node クラスの派生とする
     """
 
-    def __init__(self, cargo: T, parent: Node[T] | None, func_get_val: Callable[[T], float], func_comp: Callable[[T, T], int]):
+    def __init__(self, cargo: T, parent: Node[T] | None, func_get_val: Callable[[T], str], func_comp: Callable[[T, T], int]):
         """初期化
 
         Args:
@@ -198,7 +198,7 @@ class Leaf(Node[T]):
         return self._cargo
     
     @property
-    def val(self) -> float:
+    def val(self) -> str:
         return self._func_get_val(self._cargo)
 
     def compareCargo(self, other: T) -> int:

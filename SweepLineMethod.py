@@ -33,17 +33,19 @@ class BNode:
 class LeafB(Leaf[BNode]):
 
     def __init__(self, val: BNode, parent: Node[BNode] | None):
-        super().__init__(val, parent, get_leafb_key, comp_leafb_key)
+        super().__init__(val, parent, self._get_leafb_key, self._comp_leafb_key)
 
-def get_leafb_key(v: BNode) -> float:
-    return v.pt.x
-def comp_leafb_key(v1: BNode, v2: BNode) -> int:
-    if math.isclose(v1.pt.x, v2.pt.x):
-        return 0
-    if v1.pt.x < v2.pt.x:
-        return -1
-    else:
-        return 1    
+    def _get_leafb_key(self, v: BNode) -> str:
+        return str(v.pt.x)
+    
+    def _comp_leafb_key(self, v1: BNode, v2: BNode) -> int:
+        if math.isclose(v1.pt.x, v2.pt.x):
+            return 0
+        if v1.pt.x < v2.pt.x:
+            return -1
+        else:
+            return 1    
+
 def leafb_ctor(v: BNode, parent: Node[BNode]):
     return LeafB(v, parent)
 
@@ -64,9 +66,9 @@ class LeafA(Leaf[ANode]):
 
     def __init__(self, val: ANode, parent: Node[ANode] | None, sweepline: Sweepline):
         super().__init__(val, parent,
-                         # func_get_val -> float
+                         # func_get_val -> str
                          #   走査線の x 座標における 線分の y 座標 を求める
-                         lambda v: v.ls.calcYIfExist(sweepline.x),
+                         lambda v: str(v.ls.calcYIfExist(sweepline.x)),
                          # func_comp -> int
                          #   走査線の x 座標における 2線分の y 座標 を比較する
                         self._comp)

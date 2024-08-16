@@ -107,44 +107,44 @@ class TestTwoThreeTree(unittest.TestCase):
         m = TestTwoThreeTree.tht.minimum()
         self.assertIsNotNone(m)
         if m is not None:
-            self.assertAlmostEqual(1.0, m.val)
+            self.assertAlmostEqual(1.0, float(m.val))
 
         m = TestTwoThreeTree.tht.maximum()
         self.assertIsNotNone(m)
         if m is not None:
-            self.assertAlmostEqual(10.0, m.val)
+            self.assertAlmostEqual(10.0, float(m.val))
 
     def test_node_search(self):
         # 探索
         nd = TestTwoThreeTree.tht.search(NodeForTest("07", 3.0))
         self.assertIsNotNone(nd)
         if nd is not None:
-            self.assertAlmostEqual(3.0, nd.val)
+            self.assertAlmostEqual(3.0, float(nd.val))
 
             # 次要素
             s = TestTwoThreeTree.tht.successor(nd)
             self.assertIsNotNone(s)
             if s is not None:
-                self.assertAlmostEqual(4.0, s.val)
+                self.assertAlmostEqual(4.0, float(s.val))
 
             # 前要素
             p = TestTwoThreeTree.tht.predecessor(nd)
             self.assertIsNotNone(p)
             if p is not None:
-                self.assertAlmostEqual(2.0, p.val)
+                self.assertAlmostEqual(2.0, float(p.val))
 
     def test_node_search_minimum(self):
         # 最小値の探索
         nd = TestTwoThreeTree.tht.search(NodeForTest("03", 1.0))
         self.assertIsNotNone(nd)
         if nd is not None:
-            self.assertAlmostEqual(1.0, nd.val)
+            self.assertAlmostEqual(1.0, float(nd.val))
 
             # 次要素
             s = TestTwoThreeTree.tht.successor(nd)
             self.assertIsNotNone(s)
             if s is not None:
-                self.assertAlmostEqual(2.0, s.val)
+                self.assertAlmostEqual(2.0, float(s.val))
 
             # 前要素
             p = TestTwoThreeTree.tht.predecessor(nd)
@@ -155,7 +155,7 @@ class TestTwoThreeTree(unittest.TestCase):
         nd = TestTwoThreeTree.tht.search(NodeForTest("08", 10.0))
         self.assertIsNotNone(nd)
         if nd is not None:
-            self.assertAlmostEqual(10.0, nd.val)
+            self.assertAlmostEqual(10.0, float(nd.val))
 
             # 次要素
             s = TestTwoThreeTree.tht.successor(nd)
@@ -165,7 +165,7 @@ class TestTwoThreeTree(unittest.TestCase):
             p = TestTwoThreeTree.tht.predecessor(nd)
             self.assertIsNotNone(p)
             if p is not None:
-                self.assertAlmostEqual(9.0, p.val)
+                self.assertAlmostEqual(9.0, float(p.val))
 
     def test_remove_1(self):
         # 削除
@@ -176,7 +176,7 @@ class TestTwoThreeTree(unittest.TestCase):
         nd = TestTwoThreeTree.tht.search(NodeForTest("02", 2.0))
         self.assertIsNotNone(nd)
         if nd is not None:
-            self.assertAlmostEqual(2.0, nd.val)
+            self.assertAlmostEqual(2.0, float(nd.val))
 
         TestTwoThreeTree.tht.delete(NodeForTest("02", 2.0))
 
@@ -196,7 +196,7 @@ class TestTwoThreeTree(unittest.TestCase):
         nd = TestTwoThreeTree.tht.search(NodeForTest("03", 3.0))
         self.assertIsNotNone(nd)
         if nd is not None:
-            self.assertAlmostEqual(3.0, nd.val)
+            self.assertAlmostEqual(3.0, float(nd.val))
 
         TestTwoThreeTree.tht.delete(NodeForTest("03", 3.0))
 
