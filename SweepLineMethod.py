@@ -343,10 +343,22 @@ class SweepLineMethod:
             if self._isExistCrossPoint(cp):
                 return
             
-            # イベントへ交点を追加
-            self._B.insert(addpt)
             # 交点リストへ追加
             self._crosses.append(cp)
+
+            # 交点と同じ座標の端点があるかチェック
+            lfb_end: Leaf[BNode] | None = self._B.search(
+                BNode(
+                    EventType.RIGHT, # CROSS 以外を指定
+                    cp,
+                    target.ls,       # other.ls でもよい
+                    None))
+            if lfb_end is not None:
+                # 端点がある場合は、交点としてイベント木には追加しない
+                return
+
+            # イベントへ交点を追加
+            self._B.insert(addpt)
         return
     
     def _init(self):
