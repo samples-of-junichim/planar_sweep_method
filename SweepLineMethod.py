@@ -26,7 +26,7 @@ class BNode:
     """平面走査法で用いるイベント管理するための Node 要素
     """
     eventType: EventType     # イベント種類
-    pt: Point                # イベントに対する Point, この X 座標をキーとする
+    pt: Point                # イベントに対する Point, この X 座標がメインのキー
     ls: LineSegment          # Point が存在する線分
     ls2: LineSegment | None  # イベントが交点の場合の２つ目の線分
 
@@ -36,11 +36,43 @@ class LeafB(Leaf[BNode]):
         super().__init__(val, parent, self._get_leafb_key, self._comp_leafb_key)
 
     def _get_leafb_key(self, v: BNode) -> str:
-        return str(v.pt.x)
+        return f"({v.pt.x}, {v.pt.y}), {v.eventType}"
     
     def _comp_leafb_key(self, v1: BNode, v2: BNode) -> int:
+        '''イベント要素の比較関数
+
+        走査線上に端点および交点が複数存在する場合に対応できるように、
+        x および y 座標を用いて同一 Node であるか判定する（x 座標が優先）
+        
+        そのうえで、イベントとしては交点を優先的に処理する
+        （走査線上に交点と端点がある場合、先に交点を処理して線分を入れ替えて
+        おかないと、端点追加に伴う上下の線分が正しく判定できなくなる）
+
+        上記を踏まえると下記の優先順位で比較を行うこととする
+            x 座標の大小
+            イベントタイプ（交点、その他の順）、交点のほうが小さい（先に処理される）
+            y 座標の大小
+        
+        Args:
+            v1: 比較要素1
+            v2: 比較要素2
+
+        Returns:
+            0: 一致,  負の値: v1 < v2,  正の値: v1 > v2
+        '''
         if math.isclose(v1.pt.x, v2.pt.x):
-            return 0
+            if v1.eventType == EventType.CROSS and v2.eventType != EventType.CROSS:
+                return -1
+            elif v1.eventType != EventType.CROSS and v2.eventType == EventType.CROSS:
+                return 1
+            else:
+                #イベントタイプが同種類（交点同士または交点以外同士）の場合は y 座標を用いて判定する
+                if math.isclose(v1.pt.y, v2.pt.y):
+                    return 0
+                if v1.pt.y < v2.pt.y:
+                    return -1
+                else:
+                    return 1
         if v1.pt.x < v2.pt.x:
             return -1
         else:
