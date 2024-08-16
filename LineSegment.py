@@ -241,7 +241,7 @@ class LineSegment:
         if (self.status == CrossPointStatus.PARALLEL):
             raise RuntimeError("linesegment is parallel to x axis")
         elif (self.status == CrossPointStatus.OUT_OF_LINESEGMENT):
-            raise RuntimeError("linesegment is not cross to y")
+            raise RuntimeError(f"linesegment is not cross to y: {y}")
         else:
             raise RuntimeError("unexpected error")
     
@@ -281,7 +281,7 @@ class LineSegment:
         if (self.status == CrossPointStatus.PARALLEL):
             raise RuntimeError("linesegment is parallel to y axis")
         elif (self.status == CrossPointStatus.OUT_OF_LINESEGMENT):
-            raise RuntimeError("linesegment is not cross to x")
+            raise RuntimeError(f"linesegment is not cross to x: {x}")
         else:
             raise RuntimeError("unexpected error")
     

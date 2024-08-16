@@ -107,12 +107,14 @@ class LeafA(Leaf[ANode]):
                     # ここにはこないはず
                     return 0
             except RuntimeError as e:
-                raise RuntimeError(f"exception occured, comparing 2 lines: {v1.ls.status = }, {v2.ls.status = }") from e
+                raise RuntimeError(f"exception occured, comparing 2 lines: {v1.ls.status = }, {v2.ls.status = }, sweep line x is {self._sweepline.x}") from e
             
         elif (v1.ls.calcYIfExist(self._sweepline.x) < v2.ls.calcYIfExist(self._sweepline.x)):
             return -1
         elif (v1.ls.calcYIfExist(self._sweepline.x) > v2.ls.calcYIfExist(self._sweepline.x)):
             return 1
+        # ここにはこないはず
+        raise RuntimeError(f"invalid compare y values, sweepline x is {self._sweepline.x}")
 
 class SweepLineMethod:
     """平面走査法
@@ -222,7 +224,7 @@ class SweepLineMethod:
         lfa: Leaf[ANode] | None = self._A.search(an)
 
         if lfa is None:
-            raise RuntimeError("right point was not found on line segment")
+            raise RuntimeError(f"right point ({lfb.cargo.pt.x}, {lfb.cargo.pt.y}) was not found in line segments on sweep line: {lfb.cargo.pt.x}")
 
         # 削除線分の前後の Node を取得
         prev: Leaf[ANode] | None = self._A.predecessor(lfa)
