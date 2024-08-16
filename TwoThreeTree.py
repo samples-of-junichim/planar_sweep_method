@@ -254,7 +254,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         作成時点では root は子要素を一つも持たない点に注意
 
         Args:
-            func_leaf_ctor: 値オブジェクト T より 葉の要素を作成する関数
+            func_leaf_ctor: 値オブジェクト T より 葉の要素を作成する関数, 第1引数: 値オブジェクト T, 第2引数: 親ノード
         """
         self.root: InternalNode[T] = InternalNode[T](None)
         self._func_leaf_ctor = func_leaf_ctor
