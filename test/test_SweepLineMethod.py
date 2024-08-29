@@ -107,3 +107,54 @@ class TestSweepLineMethod(unittest.TestCase):
 
         self.assertAlmostEqual(0.75, pts[1].x)
         self.assertAlmostEqual(0.75, pts[1].y)
+
+    def test_sweepline_6(self):
+        # 線分数: 3, 交点数: 2
+        #   複数の端点が同一の走査線上にある場合
+        lst: list[LineSegment] = []
+        lst.append(LineSegment(Point(1.0,  1.0), Point(3.0, -1.0)))
+        lst.append(LineSegment(Point(1.0,  2.0), Point(2.0, -1.0)))
+        lst.append(LineSegment(Point(2.0, -0.5), Point(3.0,    0)))
+
+        slm : SweepLineMethod = SweepLineMethod(lst)
+        slm.exec()
+
+        pts: list[Point] = slm.getCrossPoints()
+        
+        # 交点が想定のものかチェック
+        self.assertEqual(2, len(pts))
+
+        self.assertAlmostEqual(1.5, pts[0].x)
+        self.assertAlmostEqual(0.5, pts[0].y)
+
+        self.assertAlmostEqual( 7/3, pts[1].x)
+        self.assertAlmostEqual(-1/3, pts[1].y)
+
+    def test_sweepline_7(self):
+        # 線分数: 4, 交点数: 4
+        #   複数の交点が同一の走査線上にある場合
+        lst: list[LineSegment] = []
+        lst.append(LineSegment(Point(1.0,  2.0), Point(3.0,    0)))
+        lst.append(LineSegment(Point(1.0,  1.0), Point(3.0, -1.0)))
+        lst.append(LineSegment(Point(1.0,    0), Point(3.0,  2.0)))
+        lst.append(LineSegment(Point(1.0, -1.0), Point(3.0,  1.0)))
+
+        slm : SweepLineMethod = SweepLineMethod(lst)
+        slm.exec()
+
+        pts: list[Point] = slm.getCrossPoints()
+        
+        # 交点が想定のものかチェック
+        self.assertEqual(4, len(pts))
+
+        self.assertAlmostEqual(1.5, pts[0].x)
+        self.assertAlmostEqual(0.5, pts[0].y)
+
+        self.assertAlmostEqual(2.0, pts[1].x)
+        self.assertAlmostEqual(1.0, pts[1].y)
+
+        self.assertAlmostEqual(2.0, pts[2].x)
+        self.assertAlmostEqual(0.0, pts[2].y)
+
+        self.assertAlmostEqual(2.5, pts[3].x)
+        self.assertAlmostEqual(0.5, pts[3].y)
