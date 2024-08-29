@@ -10,6 +10,9 @@ from TwoThreeTree import Leaf, Node, TwoThreeTree
 # for debug
 #import datetime
 
+# 走査線を移動させる際の微小値
+_DELTA = 1e-5
+
 @unique
 class EventType(Enum):
     """イベント種類の enum
@@ -93,8 +96,7 @@ class ANode:
     ls: LineSegment      # Point が存在する線分, 走査線上における線分の y 座標をキーとする
 
 class LeafA(Leaf[ANode]):
-    _delta_x : float = - 1e-5
-    _sweepline: Sweepline
+    _delta_x : float = -1 * _DELTA
 
     def __init__(self, val: ANode, parent: Node[ANode] | None, sweepline: Sweepline):
         super().__init__(val, parent,
@@ -104,7 +106,7 @@ class LeafA(Leaf[ANode]):
                          # func_comp -> int
                          #   走査線の x 座標における 2線分の y 座標 を比較する
                         self._comp)
-        self._sweepline = sweepline
+        self._sweepline: Sweepline = sweepline
 
     def _comp(self, v1, v2) -> int:
         """走査線の x 座標における ２線分（ANodeとして与える）の y 座標 を比較する
@@ -130,13 +132,13 @@ class LeafA(Leaf[ANode]):
                 return 0
             
             # 異なる線分同士の場合は、交点である可能性が高い。なので、少しずらして線分の上下を判定する
-            #   ずらすのは走査線の進行方向の逆向きとする（交点追加により並びが変わらないようにするため）
+            #   ずらすのは走査線の進行方向の逆向きとする（交点通過により並びが変わらないようにするため）
             try:
-                if (math.isclose(v1.ls.calcYIfExist(self._sweepline.x + self._delta_x), v2.ls.calcYIfExist(self._sweepline.x + self._delta_x))):
+                if (math.isclose(v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x), v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x))):
                     return 0
-                elif (v1.ls.calcYIfExist(self._sweepline.x + self._delta_x) < v2.ls.calcYIfExist(self._sweepline.x + self._delta_x)):
+                elif (v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x) < v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)):
                     return -1
-                elif (v1.ls.calcYIfExist(self._sweepline.x + self._delta_x) > v2.ls.calcYIfExist(self._sweepline.x + self._delta_x)):
+                elif (v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x) > v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)):
                     return 1
                 else:
                     # ここにはこないはず
@@ -165,7 +167,7 @@ class SweepLineMethod:
     _B         : イベントの配列, 2-3木で管理
     _crosses   : 交点のリスト
     """
-    _delta_x : float = 1e-5
+    _delta_x : float = _DELTA
 
     def __init__(self, lses: list[LineSegment]):
         """コンストラクタ
@@ -243,7 +245,7 @@ class SweepLineMethod:
             #print(e)
             try:
                 sweep_line_x_old = self._sweepline.x
-                self._sweepline.x = self._sweepline.x + self._delta_x
+                self._sweepline.x = self._sweepline.x + SweepLineMethod._delta_x
 
                 lfa: Leaf[ANode] = self._A.insert(an)
 
@@ -315,7 +317,7 @@ class SweepLineMethod:
         self._A.delete(nd2)
 
         sweep_line_x_old: float = self._sweepline.x
-        self._sweepline.x = self._sweepline.x + self._delta_x
+        self._sweepline.x = self._sweepline.x + SweepLineMethod._delta_x
 
         lfa_ls1 = self._A.insert(nd1)
         lfa_ls2 = self._A.insert(nd2)
