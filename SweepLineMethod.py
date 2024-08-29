@@ -93,7 +93,7 @@ class ANode:
     ls: LineSegment      # Point が存在する線分, 走査線上における線分の y 座標をキーとする
 
 class LeafA(Leaf[ANode]):
-    _delta_x : float = 1e-5
+    _delta_x : float = - 1e-5
     _sweepline: Sweepline
 
     def __init__(self, val: ANode, parent: Node[ANode] | None, sweepline: Sweepline):
@@ -130,6 +130,7 @@ class LeafA(Leaf[ANode]):
                 return 0
             
             # 異なる線分同士の場合は、交点である可能性が高い。なので、少しずらして線分の上下を判定する
+            #   ずらすのは走査線の進行方向の逆向きとする（交点追加により並びが変わらないようにするため）
             try:
                 if (math.isclose(v1.ls.calcYIfExist(self._sweepline.x + self._delta_x), v2.ls.calcYIfExist(self._sweepline.x + self._delta_x))):
                     return 0
@@ -141,7 +142,7 @@ class LeafA(Leaf[ANode]):
                     # ここにはこないはず
                     return 0
             except RuntimeError as e:
-                raise RuntimeError(f"exception occured, comparing 2 lines: {v1.ls.status = }, {v2.ls.status = }, sweep line x is {self._sweepline.x}") from e
+                raise RuntimeError(f"line calculation error, comparing 2 lines: {v1.ls.status = }, {v2.ls.status = }, sweep line x is {self._sweepline.x}") from e
             
         elif (v1.ls.calcYIfExist(self._sweepline.x) < v2.ls.calcYIfExist(self._sweepline.x)):
             return -1
@@ -164,6 +165,7 @@ class SweepLineMethod:
     _B         : イベントの配列, 2-3木で管理
     _crosses   : 交点のリスト
     """
+    _delta_x : float = 1e-5
 
     def __init__(self, lses: list[LineSegment]):
         """コンストラクタ
@@ -197,6 +199,7 @@ class SweepLineMethod:
 
             # for debug
             #self._B.visualizeGraph(True, "tree_b_" + datetime.datetime.now().isoformat())
+            #self._A.visualizeGraph(True, "tree_a_" + datetime.datetime.now().isoformat())
 
             if lfb is None:
                 break
@@ -284,29 +287,34 @@ class SweepLineMethod:
         if lfb.cargo.ls2 is None:
             raise RuntimeError("no 2nd line segment")
 
-        # 交点に対応する走査線上の点
-        #   走査線が交点に達する前の時点で、下側の線分上のもの（Y座標が小さいもの）
-        lfa_lower: Leaf[ANode] | None = self._A.search(
-            ANode(lfb.cargo.ls)
-        )
-        if lfa_lower is None:
-            lfa_lower: Leaf[ANode] | None = self._A.search(
-                ANode(lfb.cargo.ls2)
-            )
-        if lfa_lower is None:
-            raise RuntimeError("cross point was not found on lower line segment")
+        # 交点に関する要素が存在することをチェック
+        self._existNodeOnSweepLineForCrossPoint(lfb)
 
-        #   走査線が交点に達する前の時点で、上側の線分上のもの（Y座標が大きいもの）
-        lfa_upper: Leaf[ANode] | None = self._A.successor(lfa_lower)
-        if lfa_upper is None:
-            raise RuntimeError("cross point was not found on upper line segment")
-        
         # 線分の入れ替え
-        #   2-3 木内部の並びを変更するため、葉を削除後改めて追加すれば、
-        #   その時の走査線に対応した位置に挿入される
-        self._A.delete(lfa_lower.cargo)
-        lfa_upper_switched: Leaf[ANode] | None = self._A.insert(lfa_lower.cargo)
-        lfa_lower_switched: Leaf[ANode] | None = lfa_upper
+        #   葉を削除後、走査線の位置を少し進めて、改めて追加すれば、
+        #   その時の走査線に対応した位置に挿入され、走査線上の並びが交換される
+        nd1: ANode = ANode(lfb.cargo.ls)
+        nd2: ANode = ANode(lfb.cargo.ls2)
+
+        self._A.delete(nd1)
+        self._A.delete(nd2)
+
+        sweep_line_x_old: float = self._sweepline.x
+        self._sweepline.x = self._sweepline.x + self._delta_x
+
+        lfa_ls1 = self._A.insert(nd1)
+        lfa_ls2 = self._A.insert(nd2)
+
+        # 上下を判定
+        ret: int = lfa_ls1.compareCargo(lfa_ls2.cargo)
+        if  ret == 0:
+            raise RuntimeError(f"two lines are same at cross point ({lfb.cargo.pt.x}, {lfb.cargo.pt.y}), sweep line, x = {self._sweepline.x}")
+        elif ret > 0:
+            lfa_upper_switched: Leaf[ANode] | None = lfa_ls1
+            lfa_lower_switched: Leaf[ANode] | None = lfa_ls2
+        else:
+            lfa_upper_switched: Leaf[ANode] | None = lfa_ls2
+            lfa_lower_switched: Leaf[ANode] | None = lfa_ls1
 
         # 新しい交点の探索
 
@@ -319,7 +327,36 @@ class SweepLineMethod:
         if lfa_prev is not None:
             self._checkCrossPoint(lfa_lower_switched.cargo, lfa_prev.cargo)
 
+        # 走査線位置を元に戻しておく
+        self._sweepline.x = sweep_line_x_old
+
         return
+
+    def _existNodeOnSweepLineForCrossPoint(self, lfb: LeafB):
+        """交点に関する要素が存在することをチェック
+
+        交点に対する線分が、走査線上にあることを確認しておく
+
+        Args:
+            lfb  線分の交点
+        """
+        # 交点なので、必ずあるはず
+        if lfb.cargo.ls2 is None:
+            raise RuntimeError("no 2nd line segment")
+
+        # 交点に対応する走査線上の線分の存在
+        lfa_ls1: Leaf[ANode] | None = self._A.search(
+            ANode(lfb.cargo.ls)
+        )
+        if lfa_ls1 is None:
+            raise RuntimeError(f"line segment for cross point ({lfb.cargo.pt.x}, {lfb.cargo.pt.y}) was not found on sweep line, x = {self._sweepline.x}")
+
+        # 交点に対応する走査線上の線分の存在
+        lfa_ls2: Leaf[ANode] | None = self._A.search(
+                ANode(lfb.cargo.ls2)
+            )
+        if lfa_ls2 is None:
+            raise RuntimeError(f"line segment for cross point ({lfb.cargo.pt.x}, {lfb.cargo.pt.y}) was not found on sweep line, x = {self._sweepline.x}")
 
     def _checkCrossPoint(self, target: ANode, other: ANode):
         """２線分の交点をチェック
