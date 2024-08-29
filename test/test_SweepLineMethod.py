@@ -158,3 +158,39 @@ class TestSweepLineMethod(unittest.TestCase):
 
         self.assertAlmostEqual(2.5, pts[3].x)
         self.assertAlmostEqual(0.5, pts[3].y)
+
+    def test_sweepline_8(self):
+        # 線分数: 2, 交点数: 1
+        #   左端点で２線分が重なっている場合
+        lst: list[LineSegment] = []
+        lst.append(LineSegment(Point(1.0,  1.0), Point(1.5,   0)))
+        lst.append(LineSegment(Point(1.0,  1.0), Point(2.0, 2.0)))
+
+        slm : SweepLineMethod = SweepLineMethod(lst)
+        slm.exec()
+
+        pts: list[Point] = slm.getCrossPoints()
+        
+        # 交点が想定のものかチェック
+        self.assertEqual(1, len(pts))
+
+        self.assertAlmostEqual(1.0, pts[0].x)
+        self.assertAlmostEqual(1.0, pts[0].y)
+    
+    def test_sweepline_9(self):
+        # 線分数: 2, 交点数: 1
+        #   右端点で２線分が重なっている場合
+        lst: list[LineSegment] = []
+        lst.append(LineSegment(Point(3.0,  2.0), Point(4.0, 1.0)))
+        lst.append(LineSegment(Point(2.5,  0.0), Point(4.0, 1.0)))
+
+        slm : SweepLineMethod = SweepLineMethod(lst)
+        slm.exec()
+
+        pts: list[Point] = slm.getCrossPoints()
+        
+        # 交点が想定のものかチェック
+        self.assertEqual(1, len(pts))
+
+        self.assertAlmostEqual(4.0, pts[0].x)
+        self.assertAlmostEqual(1.0, pts[0].y)
