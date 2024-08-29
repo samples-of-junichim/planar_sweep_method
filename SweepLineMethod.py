@@ -234,7 +234,22 @@ class SweepLineMethod:
 
         # 走査線上の線分として追加                
         an: ANode = ANode(lfb.cargo.ls)
-        lfa: Leaf[ANode] = self._A.insert(an)
+        try:
+            lfa: Leaf[ANode] = self._A.insert(an)
+        except RuntimeError as e:
+            # 左端点が交点でもある場合、追加時の走査線上の上下判定で範囲外のエラーとなる
+            # このため、走査線を少しだけ進めて再度追加を行う
+            
+            #print(e)
+            try:
+                sweep_line_x_old = self._sweepline.x
+                self._sweepline.x = self._sweepline.x + self._delta_x
+
+                lfa: Leaf[ANode] = self._A.insert(an)
+
+                self._sweepline.x = sweep_line_x_old
+            except RuntimeError as e2:
+                raise RuntimeError(f"exception occured: cannot add LEFT endpoint: ({lfb.cargo.pt.x}, {lfb.cargo.pt.y})") from e2
 
         # 追加線分の前後の交点を確認し、あれば追加
         prev: Leaf[ANode] | None = self._A.predecessor(lfa)
