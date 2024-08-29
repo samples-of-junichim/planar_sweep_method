@@ -32,6 +32,7 @@ class BNode:
     pt: Point                # イベントに対する Point, この X 座標がメインのキー
     ls: LineSegment          # Point が存在する線分
     ls2: LineSegment | None  # イベントが交点の場合の２つ目の線分
+    lnId: int | None         # 線分 ID, 端点追加時のみ割り当てる
 
 class LeafB(Leaf[BNode]):
 
@@ -51,10 +52,14 @@ class LeafB(Leaf[BNode]):
         （走査線上に交点と端点がある場合、先に交点を処理して線分を入れ替えて
         おかないと、端点追加に伴う上下の線分が正しく判定できなくなる）
 
+        また、線分の端点が重なっている場合へ対応するため、線分 ID により、
+        同一 Node であるかを判定する（一方の線分 ID がないような場合は同じとみなす）
+
         上記を踏まえると下記の優先順位で比較を行うこととする
             x 座標の大小
             イベントタイプ（交点、その他の順）、交点のほうが小さい（先に処理される）
             y 座標の大小
+            線分 ID（交点同士以外の場合）、線分 ID が小さい（先に処理される）
         
         Args:
             v1: 比較要素1
@@ -71,7 +76,23 @@ class LeafB(Leaf[BNode]):
             else:
                 #イベントタイプが同種類（交点同士または交点以外同士）の場合は y 座標を用いて判定する
                 if math.isclose(v1.pt.y, v2.pt.y):
-                    return 0
+                    # y 座標が同じ場合は、交点同士かそれ以外かで判定方法を切り替える
+
+                    # 交点同士の場合
+                    if v1.eventType == EventType.CROSS and v2.eventType == EventType.CROSS:
+                        return 0
+                    
+                    # 交点同士の比較以外は 線分ID で同一か否かを判定
+                    #   線分の端点に該当するため ID が異なっていれば、異なる点として扱う
+                    if v1.lnId is None or v2.lnId is None:
+                        return 0
+                    else:
+                        if v1.lnId > v2.lnId:
+                            return 1
+                        elif v1.lnId < v2.lnId:
+                            return -1
+                        else:
+                            return 0
                 if v1.pt.y < v2.pt.y:
                     return -1
                 else:
@@ -235,6 +256,7 @@ class SweepLineMethod:
         """
 
         # 走査線上の線分として追加                
+        sweep_line_x_old = self._sweepline.x
         an: ANode = ANode(lfb.cargo.ls)
         try:
             lfa: Leaf[ANode] = self._A.insert(an)
@@ -244,12 +266,9 @@ class SweepLineMethod:
             
             #print(e)
             try:
-                sweep_line_x_old = self._sweepline.x
                 self._sweepline.x = self._sweepline.x + SweepLineMethod._delta_x
-
                 lfa: Leaf[ANode] = self._A.insert(an)
 
-                self._sweepline.x = sweep_line_x_old
             except RuntimeError as e2:
                 raise RuntimeError(f"exception occured: cannot add LEFT endpoint: ({lfb.cargo.pt.x}, {lfb.cargo.pt.y})") from e2
 
@@ -262,6 +281,8 @@ class SweepLineMethod:
         if succ is not None:
             self._checkCrossPoint(lfa.cargo, succ.cargo)
 
+        # 走査線を元に戻す
+        self._sweepline.x = sweep_line_x_old
         return
 
     def _procRight(self, lfb: LeafB):
@@ -391,7 +412,8 @@ class SweepLineMethod:
                 EventType.CROSS,
                 cp,
                 target.ls,
-                other.ls)
+                other.ls,
+                None)
             
             # すでに発見した交点であれば何もしない
             if self._isExistCrossPoint(cp):
@@ -406,6 +428,7 @@ class SweepLineMethod:
                     EventType.RIGHT, # CROSS 以外を指定
                     cp,
                     target.ls,       # other.ls でもよい
+                    None,
                     None))
             if lfb_end is not None:
                 # 端点がある場合は、交点としてイベント木には追加しない
@@ -421,6 +444,7 @@ class SweepLineMethod:
         対象線分の両端点をイベント木に追加        
         """
         # 線分の端点を B に追加
+        lineId: int = 0
         ls: LineSegment
         for ls in self._L:
             # 線分の左端点
@@ -428,7 +452,8 @@ class SweepLineMethod:
                 EventType.LEFT,
                 ls.minxPt,
                 ls,
-                None)
+                None,
+                lineId)
             self._B.insert(bn)
 
             # 線分の右端点
@@ -436,8 +461,10 @@ class SweepLineMethod:
                 EventType.RIGHT,
                 ls.maxxPt,
                 ls,
-                None)
+                None,
+                lineId)
             self._B.insert(bn)
+            lineId += 1
 
         # Aは 初期化時点では空のため、何もしない
         return
