@@ -52,13 +52,15 @@ class LeafB(Leaf[BNode]):
         （走査線上に交点と端点がある場合、先に交点を処理して線分を入れ替えて
         おかないと、端点追加に伴う上下の線分が正しく判定できなくなる）
 
-        また、線分の端点が重なっている場合へ対応するため、線分 ID により、
-        同一 Node であるかを判定する（一方の線分 ID がないような場合は同じとみなす）
+        また、線分の端点が重なっている場合へ対応するため、以下のようにする
+        ・イベント種類が異なる場合は、左端点を優先する（走査線上に線分を追加するのを優先する）
+        ・線分 ID により、同一 Node であるかを判定する（一方の線分 ID がないような場合は同じとみなす）
 
         上記を踏まえると下記の優先順位で比較を行うこととする
             x 座標の大小
             イベントタイプ（交点、その他の順）、交点のほうが小さい（先に処理される）
             y 座標の大小
+            端点が異なる場合は、イベントタイプ（左端点、右端点の順）、左端点を持つ方が小さい（先に処理される）
             線分 ID（交点同士以外の場合）、線分 ID が小さい（先に処理される）
         
         Args:
@@ -87,6 +89,13 @@ class LeafB(Leaf[BNode]):
                     if v1.lnId is None or v2.lnId is None:
                         return 0
                     else:
+                        # 線分 ID がある場合は、先に、イベントタイプで判定
+                        #   イベントタイプ異なる場合は、左端点を優先する(走査線上に追加する処理を優先する）
+                        if v1.eventType == EventType.LEFT and v2.eventType == EventType.RIGHT:
+                            return -1
+                        elif v1.eventType == EventType.RIGHT and v2.eventType == EventType.LEFT:
+                            return 1
+                    
                         if v1.lnId > v2.lnId:
                             return 1
                         elif v1.lnId < v2.lnId:
@@ -154,20 +163,33 @@ class LeafA(Leaf[ANode]):
             
             # 異なる線分同士の場合は、交点である可能性が高い。なので、少しずらして線分の上下を判定する
             #   ずらすのは走査線の進行方向の逆向きとする（交点通過により並びが変わらないようにするため）
+            y1: float | None
+            y2: float | None
             try:
-                y1: float = v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)
-                y2: float = v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)
+                y1 = v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)
+            except:
+                y1 = None
+            try:
+                y2 = v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)
+            except:
+                y2 = None
+
+            if y1 is not None and y2 is not None:
                 if math.isclose(y1, y2):
                     return 0
                 elif y1 < y2:
                     return -1
                 elif y1 > y2:
                     return 1
-                else:
-                    # ここにはこないはず
-                    return 0
-            except RuntimeError as e:
-                raise RuntimeError(f"line calculation error, comparing 2 lines: {v1.ls.status = }, {v2.ls.status = }, sweep line x is {self._sweepline.x}") from e
+                
+            # すらした結果、一方が範囲外で計算できない場合、走査線上に端点がある線分と
+            # そうではない線分からなると思われるので、一致ではなく、走査線上に端点がある線分を優先させる
+            if v1.ls.status == CrossPointStatus.OUT_OF_LINESEGMENT and v2.ls.status == CrossPointStatus.EXIST:
+                return -1
+            elif v1.ls.status == CrossPointStatus.EXIST and v2.ls.status == CrossPointStatus.OUT_OF_LINESEGMENT:
+                return 1
+            # すらした結果、共に範囲外で計算できないような場合などは、例外を投げる
+            raise RuntimeError(f"line calculation error, comparing 2 lines: {v1.ls.status = }, {v2.ls.status = }, sweep line x is {self._sweepline.x}")
             
         elif (v1.ls.calcYIfExist(self._sweepline.x) < v2.ls.calcYIfExist(self._sweepline.x)):
             return -1
