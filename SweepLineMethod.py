@@ -129,7 +129,7 @@ class LeafA(Leaf[ANode]):
                         self._comp)
         self._sweepline: Sweepline = sweepline
 
-    def _comp(self, v1, v2) -> int:
+    def _comp(self, v1: ANode, v2: ANode) -> int:
         """走査線の x 座標における ２線分（ANodeとして与える）の y 座標 を比較する
             
             v1 の y 座標のほうが大きい場合に正の値を返す
@@ -155,11 +155,13 @@ class LeafA(Leaf[ANode]):
             # 異なる線分同士の場合は、交点である可能性が高い。なので、少しずらして線分の上下を判定する
             #   ずらすのは走査線の進行方向の逆向きとする（交点通過により並びが変わらないようにするため）
             try:
-                if (math.isclose(v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x), v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x))):
+                y1: float = v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)
+                y2: float = v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)
+                if math.isclose(y1, y2):
                     return 0
-                elif (v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x) < v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)):
+                elif y1 < y2:
                     return -1
-                elif (v1.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x) > v2.ls.calcYIfExist(self._sweepline.x + LeafA._delta_x)):
+                elif y1 > y2:
                     return 1
                 else:
                     # ここにはこないはず
