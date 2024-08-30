@@ -446,12 +446,8 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         Returns:
             次の要素, None 見つからない（obj に対する葉がない場合も含む）
         """
-        nd: Node[T] = self._search_raw(obj.cargo)
-        if not isinstance(nd, Leaf):
-            return None
-
         # 次の要素を含む部分木を見つける
-        nxt: Node[T] | None = self._find_next_subtree_recursive(nd)
+        nxt: Node[T] | None = self._find_next_subtree_recursive(obj)
 
         # 部分木の最小要素を取得
         return self._minimum_raw(nxt)
@@ -487,12 +483,8 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         Returns:
             前の要素, None 見つからない（obj に対する葉がない場合も含む）
         """
-        nd: Node[T] = self._search_raw(obj.cargo)
-        if not isinstance(nd, Leaf):
-            return None
-
         # 前の要素を含む部分木を見つける
-        prv: Node[T] | None = self._find_prev_subtree_recursive(nd)
+        prv: Node[T] | None = self._find_prev_subtree_recursive(obj)
 
         # 部分木の最大要素を取得
         return self._maximum_raw(prv)
@@ -775,7 +767,7 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
             return
         
         if not isinstance(nd, InternalNode):
-            raise RuntimeError()
+            raise RuntimeError("nd is not InternalNode")
         
         # 更新
         nd.left_max_node = self._maximum_raw(nd.left)
