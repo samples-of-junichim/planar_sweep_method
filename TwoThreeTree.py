@@ -781,6 +781,74 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         nd.left_max_node = self._maximum_raw(nd.left)
         nd.mid_max_node = self._maximum_raw(nd.mid)
 
+    def swap(self, lf1: Leaf[T], lf2: Leaf[T]):
+        """葉の入れ替え
+
+        指定した２つの葉を、キーの値に関わらず入れ替える
+        また、入れ替え後、木の再構築を行わないことに注意
+
+        なお、引数の Leaf は search メソッド等の戻り値であることを想定している
+
+        Args:
+            lf1: 1つ目の葉
+            lf2: 2つ目の葉
+        """
+        # 親 がない以外の場合はなにもしない
+        if lf1.parent is None:
+            return
+        if lf2.parent is None:
+            return
+        
+        p1: Node[T] = lf1.parent
+        p2: Node[T] = lf2.parent
+
+        # 葉 がつながる位置
+        pos1 = self._leaf_position(p1, lf1)
+        pos2 = self._leaf_position(p2, lf2)
+
+        # 入れ替え
+        self._swap_raw(pos1, p1, lf2)
+        self._swap_raw(pos2, p2, lf1)
+
+        # 最大 node を更新
+        self._update_max_node(lf2.parent)
+        self._update_max_node(lf1.parent)
+
+    def _leaf_position(self, p: Node[T], lf: Leaf[T]) -> int:
+        """親から見た葉の位置
+
+        Args:
+            p   親 Node
+            lf  葉 Node
+
+        Returns:
+            1: left, 0: mid, -1: right
+        """
+        if p.left == lf:
+            return 1
+        elif p.mid == lf:
+            return 0
+        elif p.right is not None:
+            if p.right == lf:
+                return -1
+        raise RuntimeError("invalid leaf position")
+
+    def _swap_raw(self, pos: int, p: Node[T], lf: Node[T]):
+        """葉の付け替え
+
+        Args:
+            pos  親 p における、付け替え前の葉の位置, _leaf_position の戻り値
+            p    新しい親 Node
+            lf   付け替えたい葉 Node            
+        """
+        lf.parent = p
+        if pos > 0:
+            p.left = lf
+        elif pos == 0:
+            p.mid = lf
+        else:
+            p.right = lf
+
     def delete(self, obj: T):
         """要素の削除
 
