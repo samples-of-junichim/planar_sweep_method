@@ -43,3 +43,28 @@ class TestSweepLineMethod(unittest.TestCase):
 
         self.assertAlmostEqual(40/7, pts[4].x)
         self.assertAlmostEqual(15/7, pts[4].y)
+
+    def test_sweepline_general_2(self):
+        # 座標軸に平行な線分による交点
+        lst: list[LineSegment] = []
+        lst.append(LineSegment(Point(-2.0,  1.0 ), Point( 2.0,  1.0)))
+        lst.append(LineSegment(Point(-1.0, -1.0 ), Point(-1.0,  2.0)))
+        lst.append(LineSegment(Point( 0.0, -1.0 ), Point( 2.0, -1.0)))
+        lst.append(LineSegment(Point( 1.0, -2.0 ), Point( 1.0,  1.5)))
+
+        slm : SweepLineMethod = SweepLineMethod(lst)
+        slm.exec()
+
+        pts: list[Point] = slm.getCrossPoints()
+        
+        # 交点が想定のものかチェック
+        self.assertEqual(3, len(pts))
+
+        self.assertAlmostEqual(-1.0, pts[0].x)
+        self.assertAlmostEqual( 1.0, pts[0].y)
+
+        self.assertAlmostEqual( 1.0, pts[1].x)
+        self.assertAlmostEqual(-1.0, pts[1].y)
+
+        self.assertAlmostEqual( 1.0, pts[2].x)
+        self.assertAlmostEqual( 1.0, pts[2].y)
