@@ -215,7 +215,8 @@ class SweepLineMethod:
     _B         : イベントの配列, 2-3木で管理
     _crosses   : 交点のリスト
     """
-    _delta_x : float = _DELTA
+    _delta_x : float = _DELTA       # 交点を持つ線分の上下判定の際に用いる微小値
+    _PARALLEL_DELTA_X: float = 1.0  # 走査線に平行な線分の判定で用いる値
 
     def __init__(self, lses: list[LineSegment]):
         """コンストラクタ
@@ -282,6 +283,29 @@ class SweepLineMethod:
             lfb  線分の端点
         """
 
+        # 走査線に平行な場合
+        if lfb.cargo.ls.b == 0:
+            # 端点を通る X 軸に平行な線を規定
+            #   線分の式は b * y = c となる。その際、2点の x 座標の差分により b = 2 * _PARALLEL_DELTA_X と求められる。
+            #   このため、 _PARALLEL_DELTA_X が小さすぎる値の場合、計算誤差により問題が生じる
+            ln1: LineSegment = LineSegment(
+                Point(self._sweepline.x - SweepLineMethod._PARALLEL_DELTA_X, lfb.cargo.ls.miny),
+                Point(self._sweepline.x + SweepLineMethod._PARALLEL_DELTA_X, lfb.cargo.ls.miny))
+            ln2: LineSegment = LineSegment(
+                Point(self._sweepline.x - SweepLineMethod._PARALLEL_DELTA_X, lfb.cargo.ls.maxy),
+                Point(self._sweepline.x + SweepLineMethod._PARALLEL_DELTA_X, lfb.cargo.ls.maxy))
+            an1: ANode = ANode(ln1)
+            an2: ANode = ANode(ln2)
+            # 走査線に平行な線分と交点を持つ線分のリスト
+            #  an1 と an2 の線分範囲にある _A の要素が、現在の走査線と交点を持つ線分となる
+            lst: list[Leaf[ANode]] = self._A.range(an1, an2)
+            for lf in lst:
+                self._crosses.append(Point(self._sweepline.x, float(lf.val))) # Leaf.val が Y 座標以外を戻す場合は要修正
+            # 交点イベントの追加は行わない
+            return
+
+        # その他の場合
+
         # 走査線上の線分として追加                
         sweep_line_x_old = self._sweepline.x
         an: ANode = ANode(lfb.cargo.ls)
@@ -322,6 +346,11 @@ class SweepLineMethod:
             lfb  線分の端点
         """
 
+        # 走査線に平行な場合
+        if lfb.cargo.ls.b == 0:
+            # _A に追加されていないので、なにもしない
+            return
+        
         # 端点に対応する走査線上の線分
         an: ANode = ANode(lfb.cargo.ls)
         lfa: Leaf[ANode] | None = self._A.search(an)
