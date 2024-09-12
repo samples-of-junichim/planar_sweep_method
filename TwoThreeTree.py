@@ -841,6 +841,61 @@ class TwoThreeTree(Generic[NL, T]): # T は Node の型パラメータと一致�
         else:
             p.right = lf
 
+    def range(self, target1: T, target2: T) -> list[Leaf[T]]:
+        """引数の範囲にある要素をリストアップする
+
+        引数で与えられたオブジェクトの値 [target1, target2]
+        の範囲に該当する Leaf を探す
+
+        Args:
+            target1, 小さいほうの値
+            target2, 大きいほうの値
+
+        Returns
+            Leaf[T] のリスト
+        """
+        # 一番小さい該当要素をみつける
+        nd: Node = self._search_raw(target1)
+
+        first: Leaf | None = None
+        if isinstance(nd, Leaf):
+            # target1 のものがあればそれ
+            first = nd
+        else:
+            # target1 のものがなければ、target1 を超える left_max を持つ parent から探す
+            if nd.left is not None and isinstance(nd.left, Leaf):
+                if nd.left.compareCargo(target1) > 0:
+                    first = nd.left
+                elif nd.mid is not None and isinstance(nd.mid, Leaf):
+                    if nd.mid.compareCargo(target1) > 0:
+                        first = nd.mid
+                    elif nd.right is not None and isinstance(nd.right, Leaf):
+                        if nd.right.compareCargo(target1) > 0:
+                            first = nd.right
+        lst = []
+        if first is None:
+            # 該当する要素が見つからない
+            return lst
+
+        # 大小関係のチェック
+        if first.compareCargo(target2) <= 0:
+            lst.append(first)
+        else:
+            return lst
+
+        # 再帰的に探索
+        lf: Leaf = first
+        while (True):
+            next: Leaf | None = self.successor(lf)
+            if next is None:
+                return lst
+            
+            if next.compareCargo(target2) <= 0:
+                lst.append(next)
+                lf = next
+            else:
+                return lst
+    
     def delete(self, obj: T):
         """要素の削除
 
