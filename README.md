@@ -8,7 +8,14 @@
 
 ## 2-3 木を利用した平面走査法
 
-TBD
+[ブログ記事](https://blog.mori-soft.com/entry/2024/09/14/150118) を参照
+
+### テストケースについて
+
+テストファイルをみればいいのだが、わかりにくいので、下記の Gist (Colaboratory のファイル)を参照
+
+https://gist.github.com/junichim/9ac6e971866e1908495cd2a3736ecbdd
+https://gist.github.com/junichim/77b426f9373e2963d34be25fe55ebbc6
 
 ## 作業環境
 
