@@ -109,7 +109,7 @@ class TestSweepLineMethod(unittest.TestCase):
         self.assertAlmostEqual(0.75, pts[1].y)
 
     def test_sweepline_6(self):
-        # 線分数: 3, 交点数: 2
+        # 線分数: 3, 交点数: 3
         #   交点 と端点（右端点）が同一の走査線上にある場合
         lst: list[LineSegment] = []
         lst.append(LineSegment(Point( 0.0,  0.0 ), Point(2.0,  2.0)))
